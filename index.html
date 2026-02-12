@@ -3,200 +3,250 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Horror Ultra Edition - Multi Chaser</title>
+    <title>Escape Game Telegram</title>
     <style>
-        body { margin: 0; padding: 0; background: #000; overflow: hidden; touch-action: none; font-family: 'Courier New', monospace; }
-        canvas { display: block; filter: contrast(120%) brightness(85%) sepia(10%); }
-        #ui { position: absolute; top: 25px; left: 25px; color: #ff0000; z-index: 10; pointer-events: none; }
-        .stat { background: rgba(0,0,0,0.7); padding: 8px 18px; border-left: 4px solid red; margin-bottom: 6px; font-weight: bold; letter-spacing: 1px; }
-        
-        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100; background: #000; }
-        #screamer-img { width: 100%; height: 100%; object-fit: cover; position: absolute; filter: contrast(160%) saturate(150%); }
-        
-        #death-content { position: relative; text-align: center; animation: glitch 0.2s infinite; }
-        h1 { color: #fff; font-size: 42px; text-transform: uppercase; margin: 0; text-shadow: 5px 5px #ff0000; font-weight: 900; }
-        
-        #restart-btn { 
-            margin-top: 35px; padding: 22px 65px; background: transparent; color: white; 
-            border: 3px solid white; font-size: 24px; cursor: pointer; transition: 0.3s;
-            text-transform: uppercase; letter-spacing: 6px; font-weight: bold;
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #222;
+            font-family: 'Arial', sans-serif;
         }
-        #restart-btn:hover { background: white; color: black; box-shadow: 0 0 30px #fff; }
 
-        @keyframes glitch {
-            0% { transform: translate(0); }
-            20% { transform: translate(-4px, 4px); }
-            40% { transform: translate(-4px, -4px); }
-            60% { transform: translate(4px, 4px); }
-            80% { transform: translate(4px, -4px); }
-            100% { transform: translate(0); }
+        #gameCanvas {
+            display: block;
+            background: linear-gradient(to bottom, #1a1a2e, #16213e); /* Ночной город */
+        }
+
+        /* Интерфейс жизней */
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px #000;
+            pointer-events: none;
+        }
+
+        /* Скример */
+        #screamer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            z-index: 100;
+            object-fit: cover;
+        }
+
+        /* Кнопка рестарта */
+        #restartBtn {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 15px 30px;
+            font-size: 20px;
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: none;
+            z-index: 101;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
         }
     </style>
 </head>
 <body>
-    <div id="ui">
-        <div class="stat">СТАТУС: ПОБЕГ</div>
-        <div class="stat">ДИСТАНЦИЯ: <span id="score">0</span>м</div>
-        <div class="stat">ЖИВ: <span id="hp">100</span>%</div>
-    </div>
+
+    <div id="ui">Жизни: <span id="livesValue">3</span></div>
+    <canvas id="gameCanvas"></canvas>
     
-    <canvas id="c"></canvas>
-    
-    <div id="overlay">
-        <img id="screamer-img" src="https://i.ibb.co/Qg7r9xm/image.png">
-        <div id="death-content">
-            <h1>ТЫ ПОЙМАН</h1>
-            <button id="restart-btn">ЕЩЕ РАЗ</button>
-        </div>
-    </div>
+    <img id="screamer" src="https://ibb.co/Qg7r9xm" alt="SCREAMER">
+    <button id="restartBtn" onclick="resetGame()">ПОПРОБОВАТЬ СНОВА</button>
 
     <script>
-        const canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
-        const overlay = document.getElementById('overlay'), restartBtn = document.getElementById('restart-btn');
-        
-        // КАРТИНКИ
-        const imgRunner = new Image(); imgRunner.src = 'https://i.ibb.co/CsSyTmwD/image.png';
-        const imgChaser1 = new Image(); imgChaser1.src = 'https://i.ibb.co/WWQh9nSq/image.png';
-        const imgChaser2 = new Image(); imgChaser2.src = 'https://i.ibb.co/Xft0HNSp/image.png';
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const livesDisplay = document.getElementById('livesValue');
+        const screamerImg = document.getElementById('screamer');
+        const restartBtn = document.getElementById('restartBtn');
 
-        let w, h, p, obs, score, hp, gameActive, speed, frame, particles = [], shake = 0;
+        // Настройки экрана
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
-        function init() {
-            w = canvas.width = window.innerWidth;
-            h = canvas.height = window.innerHeight;
-            p = { x: 75, y: h - 220, w: 80, h: 125, dy: 0, g: 0.8, jump: -17, onG: false, rot: 0 };
-            obs = []; particles = []; score = 0; hp = 100; speed = 8.5; frame = 0; gameActive = true;
-            overlay.style.display = 'none';
-            loop();
+        // Загрузка ресурсов
+        const imgRunner = new Image();
+        imgRunner.src = 'https://ibb.co/CsSyTmwD'; // Тот, кто убегает
+
+        const imgChaser = new Image();
+        imgChaser.src = 'https://ibb.co/WWQh9nSq'; // Тот, кто догоняет
+
+        // Игровые переменные
+        let lives = 3;
+        let gameActive = true;
+        let score = 0;
+        let gravity = 0.8;
+        let obstacles = [];
+        let gameSpeed = 5;
+
+        // Объект игрока
+        const player = {
+            x: 150,
+            y: canvas.height - 150,
+            width: 80,
+            height: 100,
+            dy: 0,
+            jumpForce: -15,
+            isGrounded: false
+        };
+
+        // Объект преследователя (бежит чуть сзади)
+        const chaser = {
+            x: 20,
+            y: canvas.height - 150,
+            width: 90,
+            height: 110,
+            isAttacking: false
+        };
+
+        // Класс препятствий
+        class Obstacle {
+            constructor() {
+                this.width = 40 + Math.random() * 30;
+                this.height = 40 + Math.random() * 50;
+                this.x = canvas.width + 100;
+                this.y = canvas.height - this.height - 50;
+            }
+            draw() {
+                ctx.fillStyle = "#555"; // Цвет коробок/мусора
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+                // Детализация препятствия
+                ctx.strokeStyle = "#000";
+                ctx.strokeRect(this.x, this.y, this.width, this.height);
+            }
+            update() {
+                this.x -= gameSpeed;
+                this.draw();
+            }
         }
 
-        function createPart(x, y, color) {
-            for(let i=0; i<10; i++) {
-                particles.push({
-                    x, y, 
-                    vx: (Math.random()-0.5)*12, 
-                    vy: (Math.random()-0.5)*12, 
-                    life: 1, 
-                    c: color,
-                    s: Math.random()*6
-                });
+        // Обработка прыжка
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') jump();
+        });
+        window.addEventListener('touchstart', jump);
+
+        function jump() {
+            if (player.isGrounded && gameActive) {
+                player.dy = player.jumpForce;
+                player.isGrounded = false;
             }
+        }
+
+        function spawnObstacle() {
+            if (gameActive && Math.random() < 0.02) {
+                obstacles.push(new Obstacle());
+            }
+        }
+
+        function triggerDamage() {
+            lives--;
+            livesDisplay.innerText = lives;
+            
+            // Визуальный эффект удара (преследователь делает рывок)
+            chaser.x += 50;
+            setTimeout(() => chaser.x = 20, 300);
+
+            if (lives <= 0) {
+                gameOver();
+            }
+        }
+
+        function gameOver() {
+            gameActive = false;
+            screamerImg.style.display = 'block';
+            restartBtn.style.display = 'block';
+            // Можно добавить звук крика здесь: new Audio('url_to_sound').play();
+        }
+
+        function resetGame() {
+            lives = 3;
+            livesDisplay.innerText = lives;
+            obstacles = [];
+            gameActive = true;
+            screamerImg.style.display = 'none';
+            restartBtn.style.display = 'none';
+            animate();
         }
 
         function drawBackground() {
-            let bgGrad = ctx.createLinearGradient(0, 0, 0, h);
-            bgGrad.addColorStop(0, '#030000');
-            bgGrad.addColorStop(1, '#150303');
-            ctx.fillStyle = bgGrad;
-            ctx.fillRect(0, 0, w, h);
-
-            // Параллакс теней на фоне
-            ctx.fillStyle = '#080000';
-            for(let i=0; i<6; i++) {
-                let x = (i * 450 - frame * 1.5) % (w + 450);
-                ctx.fillRect(x, h-400, 50, 350);
-            }
-
-            // Дорога
-            ctx.fillStyle = '#0a0a0a';
-            ctx.fillRect(0, h-60, w, 60);
-            ctx.strokeStyle = '#300';
-            ctx.lineWidth = 2;
-            for(let i=0; i<w+100; i+=60) {
-                ctx.beginPath();
-                let xPos = i - (frame*speed)%60;
-                ctx.moveTo(xPos, h-60);
-                ctx.lineTo(xPos - 30, h);
-                ctx.stroke();
-            }
+            // Рисуем упрощенные силуэты домов
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, canvas.height - 50, canvas.width, 50); // Земля
+            
+            // Окна или детали зданий (статично для примера)
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(100, canvas.height - 300, 100, 250);
+            ctx.fillRect(300, canvas.height - 400, 120, 350);
+            ctx.fillRect(600, canvas.height - 250, 80, 200);
         }
 
-        function loop() {
-            if(!gameActive) return;
-            ctx.save();
-            if(shake > 0) { ctx.translate(Math.random()*shake-shake/2, Math.random()*shake-shake/2); shake *= 0.85; }
-            
+        function animate() {
+            if (!gameActive) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
             drawBackground();
 
-            // Эффекты частиц
-            particles.forEach((pt, i) => {
-                pt.x += pt.vx; pt.y += pt.vy; pt.life -= 0.025;
-                if(pt.life <= 0) particles.splice(i, 1);
-                ctx.fillStyle = pt.c;
-                ctx.globalAlpha = pt.life;
-                ctx.fillRect(pt.x, pt.y, pt.s, pt.s);
-            });
-            ctx.globalAlpha = 1;
+            // Гравитация и движение игрока
+            player.dy += gravity;
+            player.y += player.dy;
 
-            // Игрок (Бегун)
-            p.dy += p.g; p.y += p.dy;
-            if(p.y + p.h > h - 60) { 
-                p.y = h - 60 - p.h; p.dy = 0; p.onG = true; 
-                if(frame % 4 === 0) createPart(p.x + 20, h-60, '#222');
+            if (player.y + player.height > canvas.height - 50) {
+                player.y = canvas.height - 50 - player.height;
+                player.isGrounded = true;
             }
-            
-            p.rot = p.onG ? Math.sin(frame*0.2)*0.04 : p.dy*0.025;
-            ctx.save();
-            ctx.translate(p.x + p.w/2, p.y + p.h/2);
-            ctx.rotate(p.rot);
-            ctx.drawImage(imgRunner, -p.w/2, -p.h/2, p.w, p.h);
-            ctx.restore();
 
-            // Логика препятствий (Преследователи)
-            if(frame % 80 === 0) {
-                let type = Math.random() > 0.5 ? 1 : 2;
-                obs.push({ 
-                    x: w, 
-                    y: h - 165 - (Math.random()*20), 
-                    w: 95, 
-                    h: 95, 
-                    s: speed + (Math.random()*3),
-                    img: type === 1 ? imgChaser1 : imgChaser2 
-                });
-            }
-            
-            obs.forEach((o, i) => {
-                o.x -= o.s;
-                let hover = Math.sin(frame*0.12 + i)*12;
-                ctx.drawImage(o.img, o.x, o.y + hover, o.w, o.h);
-                
+            // Рисуем персонажей
+            ctx.drawImage(imgRunner, player.x, player.y, player.width, player.height);
+            ctx.drawImage(imgChaser, chaser.x, canvas.height - 150, chaser.width, chaser.height);
+
+            // Препятствия
+            spawnObstacle();
+            obstacles.forEach((obs, index) => {
+                obs.update();
+
                 // Проверка столкновения
-                if(p.x < o.x + o.w - 25 && p.x + p.w > o.x + 25 && p.y < o.y + o.h - 10 && p.y + p.h > o.y + 10) {
-                    obs.splice(i, 1); hp -= 34; shake = 30;
-                    createPart(p.x + 40, p.y + 50, '#f00');
-                    document.getElementById('hp').innerText = Math.max(0, hp);
-                    if(hp <= 0) { gameActive = false; setTimeout(() => { overlay.style.display = 'flex'; if(navigator.vibrate) navigator.vibrate([100,50,300]); }, 150); }
+                if (
+                    player.x < obs.x + obs.width &&
+                    player.x + player.width > obs.x &&
+                    player.y < obs.y + obs.height &&
+                    player.y + player.height > obs.y
+                ) {
+                    obstacles.splice(index, 1);
+                    triggerDamage();
                 }
-                if(o.x < -200) obs.splice(i, 1);
+
+                // Удаление лишних
+                if (obs.x + obs.width < 0) {
+                    obstacles.splice(index, 1);
+                    score++;
+                }
             });
 
-            // Динамический свет фонаря
-            let grad = ctx.createRadialGradient(p.x+p.w/2, p.y+p.h/2, 30, p.x+p.w/2, p.y+p.h/2, 650);
-            grad.addColorStop(0, 'rgba(255,255,220,0.18)');
-            grad.addColorStop(0.4, 'rgba(0,0,0,0.3)');
-            grad.addColorStop(1, 'rgba(0,0,0,0.99)');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0,0,w,h);
-
-            // Визуальный шум
-            if(frame % 3 === 0) {
-                ctx.fillStyle = 'rgba(255,255,255,0.03)';
-                ctx.fillRect(Math.random()*w, Math.random()*h, 1.5, 1.5);
-            }
-
-            score++; speed += 0.0018; frame++;
-            document.getElementById('score').innerText = Math.floor(score/10);
-            ctx.restore();
-            requestAnimationFrame(loop);
+            requestAnimationFrame(animate);
         }
-        
-        function jump() { if(p.onG && gameActive) { p.dy = p.jump; p.onG = false; } }
 
-        window.addEventListener('touchstart', (e) => { if(e.target !== restartBtn) { e.preventDefault(); jump(); } }, {passive: false});
-        window.addEventListener('mousedown', (e) => { if(e.target !== restartBtn) jump(); });
-        restartBtn.onclick = (e) => { e.stopPropagation(); init(); };
+        // Запуск после загрузки картинок
+        imgRunner.onload = () => {
+            animate();
+        };
 
-        imgRunner.onload = init;
     </script>
 </body>
 </html>
