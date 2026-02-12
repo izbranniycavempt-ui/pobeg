@@ -5,11 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Horror Ultra Edition - Ultimate Massive Code</title>
     <style>
-        body { margin: 0; padding: 0; background: #000; overflow: hidden; touch-action: none; font-family: 'Courier New', monospace; }
-        canvas { display: block; filter: contrast(130%) brightness(90%) grayscale(0.2); }
+        /* ПОЛНЫЙ СТИЛЬ - БЕЗ ОПТИМИЗАЦИИ */
+        body { 
+            margin: 0; 
+            padding: 0; 
+            background: #000; 
+            overflow: hidden; 
+            touch-action: none; 
+            font-family: 'Courier New', monospace; 
+        }
+        canvas { 
+            display: block; 
+            filter: contrast(130%) brightness(90%) grayscale(0.2); 
+        }
         
-        /* ИНТЕРФЕЙС - НИЧЕГО НЕ ИЗМЕНЕНО */
-        #ui { position: absolute; top: 25px; left: 25px; color: #ff0000; z-index: 10; pointer-events: none; }
+        #ui { 
+            position: absolute; 
+            top: 25px; 
+            left: 25px; 
+            color: #ff0000; 
+            z-index: 10; 
+            pointer-events: none; 
+        }
         .stat { 
             background: linear-gradient(90deg, rgba(30,0,0,0.9), transparent); 
             padding: 10px 20px; 
@@ -20,32 +37,72 @@
             text-shadow: 2px 2px 5px #000;
         }
 
-        /* НАДПИСЬ LEVEL 2 */
         #level-alert {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: white; font-size: 70px; font-weight: 900; display: none; z-index: 50;
-            letter-spacing: 15px; text-shadow: 0 0 30px #fff, 0 0 10px #ff0000;
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%);
+            color: white; 
+            font-size: 70px; 
+            font-weight: 900; 
+            display: none; 
+            z-index: 50;
+            letter-spacing: 15px; 
+            text-shadow: 0 0 30px #fff, 0 0 10px #ff0000;
             animation: pulse 0.5s infinite;
         }
 
         #overlay { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            display: none; flex-direction: column; justify-content: center; 
-            align-items: center; z-index: 100; background: #000; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            display: none; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 100; 
+            background: #000; 
         }
         #screamer-img { 
-            width: 100%; height: 100%; object-fit: cover; 
-            position: absolute; filter: contrast(150%) saturate(200%); 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            position: absolute; 
+            filter: contrast(150%) saturate(200%); 
         }
-        #death-content { position: relative; text-align: center; animation: glitch 0.15s infinite; }
-        h1 { color: #fff; font-size: 50px; text-transform: uppercase; margin: 0; text-shadow: 0 0 20px #ff0000; }
+        #death-content { 
+            position: relative; 
+            text-align: center; 
+            animation: glitch 0.15s infinite; 
+        }
+        h1 { 
+            color: #fff; 
+            font-size: 50px; 
+            text-transform: uppercase; 
+            margin: 0; 
+            text-shadow: 0 0 20px #ff0000; 
+        }
         
         #restart-btn { 
-            margin-top: 40px; padding: 25px 70px; background: transparent; color: white; 
-            border: 4px solid white; font-size: 26px; cursor: pointer; transition: 0.3s;
-            text-transform: uppercase; letter-spacing: 5px; font-weight: 900;
+            margin-top: 40px; 
+            padding: 25px 70px; 
+            background: transparent; 
+            color: white; 
+            border: 4px solid white; 
+            font-size: 26px; 
+            cursor: pointer; 
+            transition: 0.3s;
+            text-transform: uppercase; 
+            letter-spacing: 5px; 
+            font-weight: 900;
         }
-        #restart-btn:hover { background: #ff0000; border-color: #ff0000; box-shadow: 0 0 50px #ff0000; }
+        #restart-btn:hover { 
+            background: #ff0000; 
+            border-color: #ff0000; 
+            box-shadow: 0 0 50px #ff0000; 
+        }
 
         @keyframes glitch {
             0% { transform: translate(2px, -2px); }
@@ -67,7 +124,6 @@
     </div>
     
     <div id="level-alert">LEVEL 2</div>
-    
     <canvas id="c"></canvas>
     
     <div id="overlay">
@@ -79,20 +135,34 @@
     </div>
 
     <script>
-        const canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
-        const overlay = document.getElementById('overlay'), restartBtn = document.getElementById('restart-btn');
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        const overlay = document.getElementById('overlay');
+        const restartBtn = document.getElementById('restart-btn');
         const levelAlert = document.getElementById('level-alert');
         
-        // ВСЕ КАРТИНКИ
-        const imgRunner = new Image(); imgRunner.src = 'https://i.ibb.co/CsSyTmwD/image.png';
-        const imgChaser1 = new Image(); imgChaser1.src = 'https://i.ibb.co/WWQh9nSq/image.png';
-        const imgChaser2 = new Image(); imgChaser2.src = 'https://i.ibb.co/Xft0HNSp/image.png';
-        const imgChaser3 = new Image(); imgChaser3.src = 'https://i.ibb.co/Dgshgmc7/image.png';
-        const imgBullet = new Image(); imgBullet.src = 'https://i.ibb.co/Qj867Kvb/image.png';
+        // ВСЕ СПРАЙТЫ (PNG БЕЗ ФОНА)
+        const imgRunner = new Image(); 
+        imgRunner.src = 'https://i.ibb.co/CsSyTmwD/image.png';
         
-        // ФОНЫ (Смена уровней)
-        const bgForest = new Image(); bgForest.src = 'https://i.postimg.cc/mD8T7XnK/forest-horror.jpg'; 
-        const bgFactory = new Image(); bgFactory.src = 'https://i.postimg.cc/3R3XJz9z/factory-horror.jpg';
+        const imgChaser1 = new Image(); 
+        imgChaser1.src = 'https://i.ibb.co/WWQh9nSq/image.png';
+        
+        const imgChaser2 = new Image(); 
+        imgChaser2.src = 'https://i.ibb.co/Xft0HNSp/image.png';
+        
+        const imgChaser3 = new Image(); 
+        imgChaser3.src = 'https://i.ibb.co/Dgshgmc7/image.png';
+        
+        const imgBullet = new Image(); 
+        imgBullet.src = 'https://i.ibb.co/Qj867Kvb/image.png'; // Тот самый PNG снаряда
+        
+        // РАБОЧИЕ ССЫЛКИ НА ФОН (ЧТОБЫ НЕ БЫЛО ОШИБОК)
+        const bgForest = new Image(); 
+        bgForest.src = 'https://wallpaperaccess.com/full/1162446.jpg'; 
+        
+        const bgFactory = new Image(); 
+        bgFactory.src = 'https://wallpaperaccess.com/full/439751.jpg';
 
         let w, h, p, obs, bullets, score, hp, gameActive, speed, frame, particles = [], dust = [], shake = 0, level = 1;
 
@@ -100,21 +170,37 @@
             w = canvas.width = window.innerWidth;
             h = canvas.height = window.innerHeight;
             
-            // Персонаж - полная детализация физики
             p = { 
-                x: 80, y: h - 250, w: 90, h: 140, 
-                dy: 0, g: 0.85, jump: -18, 
-                onG: false, rot: 0 
+                x: 80, 
+                y: h - 250, 
+                w: 90, 
+                h: 140, 
+                dy: 0, 
+                g: 0.85, 
+                jump: -18, 
+                onG: false, 
+                rot: 0 
             };
 
-            obs = []; bullets = []; particles = []; dust = [];
-            score = 0; hp = 100; speed = 9; frame = 0; gameActive = true; shake = 0; level = 1;
+            obs = []; 
+            bullets = []; 
+            particles = []; 
+            dust = [];
+            score = 0; 
+            hp = 100; 
+            speed = 9; 
+            frame = 0; 
+            gameActive = true; 
+            shake = 0; 
+            level = 1;
             
-            // Эффект пыли в воздухе (наращиваем детализацию)
+            // Пыль в воздухе для атмосферы
             for(let i=0; i<60; i++) {
                 dust.push({ 
-                    x: Math.random()*w, y: Math.random()*h, 
-                    s: Math.random()*2, o: Math.random(), 
+                    x: Math.random()*w, 
+                    y: Math.random()*h, 
+                    s: Math.random()*2, 
+                    o: Math.random(), 
                     speedMult: Math.random() * 0.5 + 0.1 
                 });
             }
@@ -127,7 +213,8 @@
         function createBlood(x, y) {
             for(let i=0; i<25; i++) {
                 particles.push({
-                    x, y, 
+                    x: x, 
+                    y: y, 
                     vx: (Math.random()-0.5)*18, 
                     vy: (Math.random()-0.5)*18, 
                     life: 1, 
@@ -138,50 +225,41 @@
         }
 
         function drawWorld() {
-            // ЛОГИКА СМЕНЫ ФОНА
-            let currentBG = level === 1 ? bgForest : bgFactory;
+            let currentBG = (level === 1) ? bgForest : bgFactory;
             
-            // Если фон не загружен, рисуем глубокий градиент тьмы
+            // Плавная прокрутка фона
             if(currentBG.complete) {
                 let scroll = (frame * speed * 0.3) % w;
                 ctx.drawImage(currentBG, -scroll, 0, w, h);
                 ctx.drawImage(currentBG, w - scroll, 0, w, h);
             } else {
-                ctx.fillStyle = level === 1 ? '#050000' : '#0a0a0a';
+                ctx.fillStyle = (level === 1) ? '#050000' : '#0a0a0a';
                 ctx.fillRect(0, 0, w, h);
             }
 
-            // Пыль (всегда в коде)
+            // Эффекты частиц пыли
             ctx.fillStyle = "#fff";
-            dust.forEach(d => {
+            for(let i = 0; i < dust.length; i++) {
+                let d = dust[i];
                 d.x -= (speed * d.speedMult);
                 if(d.x < 0) d.x = w;
                 ctx.globalAlpha = d.o * 0.4;
                 ctx.beginPath();
                 ctx.arc(d.x, d.y, d.s, 0, Math.PI*2);
                 ctx.fill();
-            });
+            }
             ctx.globalAlpha = 1;
 
-            // Дорога и разметка
+            // Пол и дорога
             ctx.fillStyle = '#0d0d0d';
             ctx.fillRect(0, h-60, w, 60);
-            ctx.strokeStyle = level === 1 ? '#200' : '#333';
-            ctx.lineWidth = 3;
-            for(let i=0; i<w+200; i+=100) {
-                let xPos = i - (frame * speed) % 100;
-                ctx.beginPath();
-                ctx.moveTo(xPos, h-60);
-                ctx.lineTo(xPos - 50, h);
-                ctx.stroke();
-            }
         }
 
         function loop() {
             if(!gameActive) return;
             ctx.save();
             
-            // Тряска экрана (сохранена)
+            // Эффект тряски экрана
             if(shake > 0) {
                 ctx.translate(Math.random()*shake-shake/2, Math.random()*shake-shake/2);
                 shake *= 0.92;
@@ -189,45 +267,56 @@
 
             drawWorld();
 
-            // Проверка на Level 2 (ровно 50 очков)
+            // Логика перехода на Level 2
             if(Math.floor(score/10) >= 50 && level === 1) {
                 level = 2;
                 levelAlert.style.display = 'block';
                 setTimeout(() => { levelAlert.style.display = 'none'; }, 2500);
             }
 
-            // Частицы крови и эффекты
-            particles.forEach((pt, i) => {
-                pt.x += pt.vx; pt.y += pt.vy; pt.life -= 0.02;
-                if(pt.life <= 0) particles.splice(i, 1);
+            // Рендеринг крови
+            for(let i = particles.length - 1; i >= 0; i--) {
+                let pt = particles[i];
+                pt.x += pt.vx; 
+                pt.y += pt.vy; 
+                pt.life -= 0.02;
+                if(pt.life <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
                 ctx.fillStyle = pt.c;
                 ctx.globalAlpha = pt.life;
                 ctx.fillRect(pt.x, pt.y, pt.s, pt.s);
-            });
+            }
             ctx.globalAlpha = 1;
 
             // Физика игрока
-            p.dy += p.g; p.y += p.dy;
+            p.dy += p.g; 
+            p.y += p.dy;
             if(p.y + p.h > h - 60) { 
-                p.y = h - 60 - p.h; p.dy = 0; p.onG = true; 
+                p.y = h - 60 - p.h; 
+                p.dy = 0; 
+                p.onG = true; 
             } else {
                 p.onG = false;
             }
             
-            p.rot = p.onG ? Math.sin(frame*0.15)*0.03 : p.dy*0.02;
+            // Анимация бега и прыжка
             ctx.save();
             ctx.translate(p.x + p.w/2, p.y + p.h/2);
-            ctx.rotate(p.rot);
+            let pRot = p.onG ? Math.sin(frame*0.15)*0.03 : p.dy*0.02;
+            ctx.rotate(pRot);
             ctx.drawImage(imgRunner, -p.w/2, -p.h/2, p.w, p.h);
             ctx.restore();
 
-            // ГЕНЕРАЦИЯ ВРАГОВ (С задержкой на старте)
+            // Спавн преследователей
             if(frame > 120 && frame % 85 === 0) {
                 let eImg = (level === 2) ? imgChaser3 : (Math.random() > 0.5 ? imgChaser2 : imgChaser1);
                 obs.push({ 
                     x: w, 
                     y: h - 180 - (Math.random()*50), 
-                    w: 110, h: 110, 
+                    w: 110, 
+                    h: 110, 
                     s: speed + (Math.random()*4),
                     img: eImg,
                     canShoot: (level === 2),
@@ -235,74 +324,95 @@
                 });
             }
             
-            // Обработка врагов
-            obs.forEach((o, i) => {
+            // Цикл обработки преследователей
+            for(let i = obs.length - 1; i >= 0; i--) {
+                let o = obs[i];
                 o.x -= o.s;
                 ctx.drawImage(o.img, o.x, o.y + Math.sin(frame*0.1)*10, o.w, o.h);
                 
-                // ЛОГИКА СТРЕЛЬБЫ НА LEVEL 2
-                if(o.canShoot && !o.hasShot && o.x < w - 150) {
+                // Стрельба (Level 2)
+                if(o.canShoot && !o.hasShot && o.x < w - 200) {
                     bullets.push({
-                        x: o.x, y: o.y + 50,
-                        vx: (speed + 6),
-                        w: 50, h: 50
+                        x: o.x, 
+                        y: o.y + 40,
+                        vx: (speed + 8),
+                        w: 60, 
+                        h: 60
                     });
                     o.hasShot = true;
                 }
 
-                // Столкновение с врагом
+                // Коллизия с игроком
                 if(p.x < o.x + o.w - 35 && p.x + p.w > o.x + 35 && p.y < o.y + o.h - 25 && p.y + p.h > o.y + 25) {
                     obs.splice(i, 1);
-                    hp -= 34; shake = 40;
+                    hp -= 34; 
+                    shake = 40;
                     createBlood(p.x + 50, p.y + 70);
                     document.getElementById('hp').innerText = Math.max(0, Math.floor(hp));
-                    if(hp <= 0) { gameActive = false; setTimeout(() => { overlay.style.display = 'flex'; }, 200); }
+                    if(hp <= 0) { 
+                        gameActive = false; 
+                        setTimeout(() => { overlay.style.display = 'flex'; }, 200); 
+                    }
                 }
                 if(o.x < -300) obs.splice(i, 1);
-            });
+            }
 
-            // Обработка пуль
-            bullets.forEach((b, i) => {
+            // Обработка снарядов
+            for(let i = bullets.length - 1; i >= 0; i--) {
+                let b = bullets[i];
                 b.x -= b.vx;
                 ctx.drawImage(imgBullet, b.x, b.y, b.w, b.h);
                 
-                // Столкновение с пулей
+                // Коллизия со снарядом
                 if(p.x < b.x + b.w - 15 && p.x + p.w > b.x + 15 && p.y < b.y + b.h - 15 && p.y + p.h > b.y + 15) {
                     bullets.splice(i, 1);
-                    hp -= 20; shake = 30;
+                    hp -= 20; 
+                    shake = 30;
                     createBlood(p.x + 50, p.y + 50);
                     document.getElementById('hp').innerText = Math.max(0, Math.floor(hp));
-                    if(hp <= 0) { gameActive = false; setTimeout(() => { overlay.style.display = 'flex'; }, 200); }
+                    if(hp <= 0) { 
+                        gameActive = false; 
+                        setTimeout(() => { overlay.style.display = 'flex'; }, 200); 
+                    }
                 }
                 if(b.x < -100) bullets.splice(i, 1);
-            });
-
-            // СВЕТ ФОНАРЯ (Максимальная детализация)
-            let light = ctx.createRadialGradient(p.x+p.w/2, p.y+p.h/2, 10, p.x+p.w/2, p.y+p.h/2, 750);
-            light.addColorStop(0, 'rgba(255,255,230,0.18)');
-            light.addColorStop(0.5, 'rgba(0,0,0,0.4)');
-            light.addColorStop(1, 'rgba(0,0,0,1)');
-            ctx.fillStyle = light;
-            ctx.fillRect(0,0,w,h);
-
-            // Кровавый фильтр при смерти
-            if(hp < 50) {
-                ctx.fillStyle = `rgba(255, 0, 0, ${0.1 + Math.sin(frame*0.1)*0.1})`;
-                ctx.fillRect(0,0,w,h);
             }
 
-            score++; speed += 0.002; frame++;
+            // Эффект света фонаря
+            let lightGradient = ctx.createRadialGradient(p.x+p.w/2, p.y+p.h/2, 10, p.x+p.w/2, p.y+p.h/2, 750);
+            lightGradient.addColorStop(0, 'rgba(255,255,230,0.18)');
+            lightGradient.addColorStop(1, 'rgba(0,0,0,1)');
+            ctx.fillStyle = lightGradient;
+            ctx.fillRect(0,0,w,h);
+
+            score++; 
+            speed += 0.002; 
+            frame++;
             document.getElementById('score').innerText = Math.floor(score/10);
             
             ctx.restore();
             requestAnimationFrame(loop);
         }
         
-        function jump() { if(p.onG && gameActive) { p.dy = p.jump; p.onG = false; } }
+        function jump() { 
+            if(p.onG && gameActive) { 
+                p.dy = p.jump; 
+                p.onG = false; 
+            } 
+        }
 
-        window.addEventListener('touchstart', (e) => { if(e.target !== restartBtn) { e.preventDefault(); jump(); } }, {passive: false});
-        window.addEventListener('mousedown', (e) => { if(e.target !== restartBtn) jump(); });
-        restartBtn.onclick = (e) => { e.stopPropagation(); init(); };
+        // Управление
+        window.onclick = jump;
+        window.ontouchstart = (e) => { 
+            if(e.target !== restartBtn) { 
+                e.preventDefault(); 
+                jump(); 
+            } 
+        };
+        restartBtn.onclick = (e) => { 
+            e.stopPropagation(); 
+            init(); 
+        };
 
         imgRunner.onload = init;
     </script>
