@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Horror Ultra Edition - Ultimate Massive Code</title>
+    <title>Horror Ultra Edition - Ultimate Fix</title>
     <style>
-        /* ПОЛНЫЙ СТИЛЬ - БЕЗ ОПТИМИЗАЦИИ */
+        /* ПОЛНЫЙ МАССИВНЫЙ СТИЛЬ */
         body { 
             margin: 0; 
             padding: 0; 
@@ -16,7 +16,7 @@
         }
         canvas { 
             display: block; 
-            filter: contrast(130%) brightness(90%) grayscale(0.2); 
+            filter: contrast(140%) brightness(80%) grayscale(0.3); 
         }
         
         #ui { 
@@ -28,13 +28,14 @@
             pointer-events: none; 
         }
         .stat { 
-            background: linear-gradient(90deg, rgba(30,0,0,0.9), transparent); 
-            padding: 10px 20px; 
-            border-left: 5px solid #ff0000; 
-            margin-bottom: 10px; 
+            background: linear-gradient(90deg, rgba(40,0,0,0.9), transparent); 
+            padding: 12px 25px; 
+            border-left: 6px solid #ff0000; 
+            margin-bottom: 12px; 
             font-weight: bold; 
-            letter-spacing: 2px;
-            text-shadow: 2px 2px 5px #000;
+            letter-spacing: 3px;
+            text-shadow: 3px 3px 6px #000;
+            text-transform: uppercase;
         }
 
         #level-alert {
@@ -42,14 +43,14 @@
             top: 50%; 
             left: 50%; 
             transform: translate(-50%, -50%);
-            color: white; 
-            font-size: 70px; 
+            color: #fff; 
+            font-size: 80px; 
             font-weight: 900; 
             display: none; 
             z-index: 50;
-            letter-spacing: 15px; 
-            text-shadow: 0 0 30px #fff, 0 0 10px #ff0000;
-            animation: pulse 0.5s infinite;
+            letter-spacing: 20px; 
+            text-shadow: 0 0 40px #ff0000, 0 0 10px #fff;
+            animation: pulseAlert 0.6s infinite;
         }
 
         #overlay { 
@@ -70,49 +71,49 @@
             height: 100%; 
             object-fit: cover; 
             position: absolute; 
-            filter: contrast(150%) saturate(200%); 
+            filter: contrast(160%) saturate(250%); 
         }
         #death-content { 
             position: relative; 
             text-align: center; 
-            animation: glitch 0.15s infinite; 
+            animation: glitchEffect 0.2s infinite; 
         }
         h1 { 
             color: #fff; 
-            font-size: 50px; 
+            font-size: 55px; 
             text-transform: uppercase; 
             margin: 0; 
-            text-shadow: 0 0 20px #ff0000; 
+            text-shadow: 0 0 25px #ff0000; 
         }
         
         #restart-btn { 
-            margin-top: 40px; 
-            padding: 25px 70px; 
-            background: transparent; 
-            color: white; 
-            border: 4px solid white; 
-            font-size: 26px; 
+            margin-top: 50px; 
+            padding: 30px 80px; 
+            background: rgba(0,0,0,0.5); 
+            color: #fff; 
+            border: 5px solid #fff; 
+            font-size: 28px; 
             cursor: pointer; 
-            transition: 0.3s;
+            transition: 0.4s;
             text-transform: uppercase; 
-            letter-spacing: 5px; 
+            letter-spacing: 6px; 
             font-weight: 900;
         }
         #restart-btn:hover { 
             background: #ff0000; 
             border-color: #ff0000; 
-            box-shadow: 0 0 50px #ff0000; 
+            box-shadow: 0 0 60px #ff0000; 
         }
 
-        @keyframes glitch {
-            0% { transform: translate(2px, -2px); }
-            50% { transform: translate(-2px, 2px); }
+        @keyframes glitchEffect {
+            0% { transform: translate(3px, -3px); opacity: 0.9; }
+            50% { transform: translate(-3px, 3px); opacity: 1; }
             100% { transform: translate(0); }
         }
-        @keyframes pulse {
-            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.1); }
-            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        @keyframes pulseAlert {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            50% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
         }
     </style>
 </head>
@@ -141,7 +142,7 @@
         const restartBtn = document.getElementById('restart-btn');
         const levelAlert = document.getElementById('level-alert');
         
-        // ВСЕ СПРАЙТЫ (PNG БЕЗ ФОНА)
+        // РЕСУРСЫ
         const imgRunner = new Image(); 
         imgRunner.src = 'https://i.ibb.co/CsSyTmwD/image.png';
         
@@ -155,14 +156,14 @@
         imgChaser3.src = 'https://i.ibb.co/Dgshgmc7/image.png';
         
         const imgBullet = new Image(); 
-        imgBullet.src = 'https://i.ibb.co/Qj867Kvb/image.png'; // Тот самый PNG снаряда
+        imgBullet.src = 'https://i.ibb.co/Qj867Kvb/image.png'; // Твоя пуля
         
-        // РАБОЧИЕ ССЫЛКИ НА ФОН (ЧТОБЫ НЕ БЫЛО ОШИБОК)
-        const bgForest = new Image(); 
-        bgForest.src = 'https://wallpaperaccess.com/full/1162446.jpg'; 
+        // СТРАШНЫЕ ФОНЫ
+        const bg1 = new Image(); 
+        bg1.src = 'https://images.wallpapersden.com/image/download/dark-forest-creepy-night_am5oa2a2UmZqaraWkpJRma2trWlnZ2U.jpg'; 
         
-        const bgFactory = new Image(); 
-        bgFactory.src = 'https://wallpaperaccess.com/full/439751.jpg';
+        const bg2 = new Image(); 
+        bg2.src = 'https://p4.wallpaperbetter.com/wallpaper/704/443/404/asylum-horror-dark-spooky-wallpaper-preview.jpg';
 
         let w, h, p, obs, bullets, score, hp, gameActive, speed, frame, particles = [], dust = [], shake = 0, level = 1;
 
@@ -173,11 +174,11 @@
             p = { 
                 x: 80, 
                 y: h - 250, 
-                w: 90, 
-                h: 140, 
+                w: 100, 
+                h: 150, 
                 dy: 0, 
-                g: 0.85, 
-                jump: -18, 
+                g: 0.9, 
+                jump: -19, 
                 onG: false, 
                 rot: 0 
             };
@@ -194,14 +195,14 @@
             shake = 0; 
             level = 1;
             
-            // Пыль в воздухе для атмосферы
-            for(let i=0; i<60; i++) {
+            // Пыль/туман
+            for(let i=0; i<80; i++) {
                 dust.push({ 
                     x: Math.random()*w, 
                     y: Math.random()*h, 
-                    s: Math.random()*2, 
+                    s: Math.random()*3, 
                     o: Math.random(), 
-                    speedMult: Math.random() * 0.5 + 0.1 
+                    sm: Math.random() * 0.6 + 0.2 
                 });
             }
 
@@ -211,47 +212,43 @@
         }
 
         function createBlood(x, y) {
-            for(let i=0; i<25; i++) {
+            for(let i=0; i<30; i++) {
                 particles.push({
                     x: x, 
                     y: y, 
-                    vx: (Math.random()-0.5)*18, 
-                    vy: (Math.random()-0.5)*18, 
+                    vx: (Math.random()-0.5)*20, 
+                    vy: (Math.random()-0.5)*20, 
                     life: 1, 
-                    c: '#ff0000',
-                    s: Math.random()*10
+                    c: '#700000',
+                    s: Math.random()*12
                 });
             }
         }
 
         function drawWorld() {
-            let currentBG = (level === 1) ? bgForest : bgFactory;
+            let currentBG = (level === 1) ? bg1 : bg2;
             
-            // Плавная прокрутка фона
             if(currentBG.complete) {
-                let scroll = (frame * speed * 0.3) % w;
+                let scroll = (frame * speed * 0.4) % w;
                 ctx.drawImage(currentBG, -scroll, 0, w, h);
                 ctx.drawImage(currentBG, w - scroll, 0, w, h);
-            } else {
-                ctx.fillStyle = (level === 1) ? '#050000' : '#0a0a0a';
-                ctx.fillRect(0, 0, w, h);
             }
 
-            // Эффекты частиц пыли
-            ctx.fillStyle = "#fff";
+            // Рендер пыли
+            ctx.fillStyle = "#ffffff";
             for(let i = 0; i < dust.length; i++) {
                 let d = dust[i];
-                d.x -= (speed * d.speedMult);
+                d.x -= (speed * d.sm);
                 if(d.x < 0) d.x = w;
-                ctx.globalAlpha = d.o * 0.4;
+                ctx.globalAlpha = d.o * 0.3;
                 ctx.beginPath();
                 ctx.arc(d.x, d.y, d.s, 0, Math.PI*2);
                 ctx.fill();
             }
             ctx.globalAlpha = 1;
 
-            // Пол и дорога
-            ctx.fillStyle = '#0d0d0d';
+            // Земля
+            ctx.fillStyle = '#050505';
             ctx.fillRect(0, h-60, w, 60);
         }
 
@@ -259,27 +256,26 @@
             if(!gameActive) return;
             ctx.save();
             
-            // Эффект тряски экрана
             if(shake > 0) {
                 ctx.translate(Math.random()*shake-shake/2, Math.random()*shake-shake/2);
-                shake *= 0.92;
+                shake *= 0.93;
             }
 
             drawWorld();
 
-            // Логика перехода на Level 2
+            // Переход на 2 уровень (50 очков)
             if(Math.floor(score/10) >= 50 && level === 1) {
                 level = 2;
                 levelAlert.style.display = 'block';
                 setTimeout(() => { levelAlert.style.display = 'none'; }, 2500);
             }
 
-            // Рендеринг крови
+            // Кровь
             for(let i = particles.length - 1; i >= 0; i--) {
                 let pt = particles[i];
                 pt.x += pt.vx; 
                 pt.y += pt.vy; 
-                pt.life -= 0.02;
+                pt.life -= 0.025;
                 if(pt.life <= 0) {
                     particles.splice(i, 1);
                     continue;
@@ -290,7 +286,7 @@
             }
             ctx.globalAlpha = 1;
 
-            // Физика игрока
+            // Игрок
             p.dy += p.g; 
             p.y += p.dy;
             if(p.y + p.h > h - 60) { 
@@ -301,92 +297,82 @@
                 p.onG = false;
             }
             
-            // Анимация бега и прыжка
             ctx.save();
             ctx.translate(p.x + p.w/2, p.y + p.h/2);
-            let pRot = p.onG ? Math.sin(frame*0.15)*0.03 : p.dy*0.02;
-            ctx.rotate(pRot);
+            ctx.rotate(p.onG ? Math.sin(frame*0.15)*0.04 : p.dy*0.03);
             ctx.drawImage(imgRunner, -p.w/2, -p.h/2, p.w, p.h);
             ctx.restore();
 
-            // Спавн преследователей
-            if(frame > 120 && frame % 85 === 0) {
-                let eImg = (level === 2) ? imgChaser3 : (Math.random() > 0.5 ? imgChaser2 : imgChaser1);
+            // Враги (Безопасный старт включен)
+            if(frame > 130 && frame % 90 === 0) {
+                let enemyType = (level === 2) ? imgChaser3 : (Math.random() > 0.5 ? imgChaser2 : imgChaser1);
                 obs.push({ 
                     x: w, 
-                    y: h - 180 - (Math.random()*50), 
-                    w: 110, 
-                    h: 110, 
-                    s: speed + (Math.random()*4),
-                    img: eImg,
-                    canShoot: (level === 2),
-                    hasShot: false
+                    y: h - 190 - (Math.random()*60), 
+                    w: 120, 
+                    h: 120, 
+                    s: speed + (Math.random()*5),
+                    img: enemyType,
+                    canFire: (level === 2),
+                    fired: false
                 });
             }
             
-            // Цикл обработки преследователей
             for(let i = obs.length - 1; i >= 0; i--) {
                 let o = obs[i];
                 o.x -= o.s;
-                ctx.drawImage(o.img, o.x, o.y + Math.sin(frame*0.1)*10, o.w, o.h);
+                ctx.drawImage(o.img, o.x, o.y + Math.sin(frame*0.1)*12, o.w, o.h);
                 
-                // Стрельба (Level 2)
-                if(o.canShoot && !o.hasShot && o.x < w - 200) {
+                // Стрельба ТОЛЬКО ТВОИМ ОРУЖИЕМ
+                if(o.canFire && !o.fired && o.x < w - 250) {
                     bullets.push({
                         x: o.x, 
                         y: o.y + 40,
-                        vx: (speed + 8),
-                        w: 60, 
-                        h: 60
+                        v: (speed + 9),
+                        w: 70, 
+                        h: 70
                     });
-                    o.hasShot = true;
+                    o.fired = true;
                 }
 
-                // Коллизия с игроком
-                if(p.x < o.x + o.w - 35 && p.x + p.w > o.x + 35 && p.y < o.y + o.h - 25 && p.y + p.h > o.y + 25) {
+                if(p.x < o.x + o.w - 40 && p.x + p.w > o.x + 40 && p.y < o.y + o.h - 30 && p.y + p.h > o.y + 30) {
                     obs.splice(i, 1);
                     hp -= 34; 
-                    shake = 40;
+                    shake = 50;
                     createBlood(p.x + 50, p.y + 70);
                     document.getElementById('hp').innerText = Math.max(0, Math.floor(hp));
-                    if(hp <= 0) { 
-                        gameActive = false; 
-                        setTimeout(() => { overlay.style.display = 'flex'; }, 200); 
-                    }
+                    if(hp <= 0) { gameActive = false; setTimeout(() => { overlay.style.display = 'flex'; }, 200); }
                 }
                 if(o.x < -300) obs.splice(i, 1);
             }
 
-            // Обработка снарядов
+            // Пули (Твоя картинка)
             for(let i = bullets.length - 1; i >= 0; i--) {
                 let b = bullets[i];
-                b.x -= b.vx;
+                b.x -= b.v;
                 ctx.drawImage(imgBullet, b.x, b.y, b.w, b.h);
                 
-                // Коллизия со снарядом
-                if(p.x < b.x + b.w - 15 && p.x + p.w > b.x + 15 && p.y < b.y + b.h - 15 && p.y + p.h > b.y + 15) {
+                if(p.x < b.x + b.w - 20 && p.x + p.w > b.x + 20 && p.y < b.y + b.h - 20 && p.y + p.h > b.y + 20) {
                     bullets.splice(i, 1);
-                    hp -= 20; 
-                    shake = 30;
+                    hp -= 25; 
+                    shake = 35;
                     createBlood(p.x + 50, p.y + 50);
                     document.getElementById('hp').innerText = Math.max(0, Math.floor(hp));
-                    if(hp <= 0) { 
-                        gameActive = false; 
-                        setTimeout(() => { overlay.style.display = 'flex'; }, 200); 
-                    }
+                    if(hp <= 0) { gameActive = false; setTimeout(() => { overlay.style.display = 'flex'; }, 200); }
                 }
-                if(b.x < -100) bullets.splice(i, 1);
+                if(b.x < -150) bullets.splice(i, 1);
             }
 
-            // Эффект света фонаря
-            let lightGradient = ctx.createRadialGradient(p.x+p.w/2, p.y+p.h/2, 10, p.x+p.w/2, p.y+p.h/2, 750);
-            lightGradient.addColorStop(0, 'rgba(255,255,230,0.18)');
-            lightGradient.addColorStop(1, 'rgba(0,0,0,1)');
-            ctx.fillStyle = lightGradient;
-            ctx.fillRect(0,0,w,h);
+            // ВЕРНУЛ ФОНАРИК (Эффект темноты с лучом)
+            let grad = ctx.createRadialGradient(p.x + p.w/2, p.y + p.h/2, 20, p.x + p.w/2, p.y + p.h/2, 600);
+            grad.addColorStop(0, 'rgba(0,0,0,0)');
+            grad.addColorStop(0.4, 'rgba(0,0,0,0.2)');
+            grad.addColorStop(1, 'rgba(0,0,0,0.98)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
 
             score++; 
-            speed += 0.002; 
+            speed += 0.0025; 
             frame++;
             document.getElementById('score').innerText = Math.floor(score/10);
             
@@ -401,13 +387,9 @@
             } 
         }
 
-        // Управление
         window.onclick = jump;
         window.ontouchstart = (e) => { 
-            if(e.target !== restartBtn) { 
-                e.preventDefault(); 
-                jump(); 
-            } 
+            if(e.target !== restartBtn) { e.preventDefault(); jump(); } 
         };
         restartBtn.onclick = (e) => { 
             e.stopPropagation(); 
